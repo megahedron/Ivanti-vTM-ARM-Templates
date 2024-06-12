@@ -91,7 +91,7 @@
       "safpx-csub-1000": "ivanti-virtual-web-application-firewall2"
     },
     "version_suffix": {
-      "latest": "3",
+      "latest": "",
       "22.2.1": ""
     },
     "imagePublisherVtm": "ivanti-vadc",
