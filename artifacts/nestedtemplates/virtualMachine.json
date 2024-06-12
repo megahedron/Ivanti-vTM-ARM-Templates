@@ -1,0 +1,186 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "string"
+    },
+    "skuType": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    },
+    "clusterName": {
+      "type": "string"
+    },
+    "authenticationType": {
+      "type": "string"
+    },
+    "adminUsername": {
+      "type": "string"
+    },
+    "adminPassword": {
+      "type": "securestring"
+    },
+    "sshPublicKey": {
+      "type": "string"
+    },
+    "sshKeyPath": {
+      "type": "string"
+    },
+    "vmSize": {
+      "type": "string"
+    },
+    "subnetId": {
+      "type": "string"
+    },
+    "loadBalancerBackendPoolId": {
+      "type": "string"
+    },
+    "networkSecurityGroupId": {
+      "type": "string"
+    },
+    "instanceCount": {
+      "type": "int"
+    },
+    "bootDiagnosticsUri": {
+      "type": "string"
+    },
+    "loadBalancerInboundNatPoolIds": {
+      "type": "array"
+    }
+  },
+  "variables": {
+    "clusterName": "[toLower(parameters('clusterName'))]",
+    "virtualMachineScaleSetName": "[concat(variables('clusterName'),'-vmss')]",
+    "networkInterfaceName": "[concat(variables('clusterName'), '-nic')]",
+    "ipConfigName": "[concat(variables('clusterName'),'-ipconfig')]",
+    "linuxConfiguration": {
+      "disablePasswordAuthentication":
+        "[equals(parameters('authenticationType'),'sshPublicKey')]",
+      "ssh": {
+        "publicKeys": [
+          {
+            "path": "[parameters('sshKeyPath')]",
+            "keyData": "[parameters('sshPublicKey')]"
+          }
+        ]
+      }
+    },
+    "osprofile": {
+      "computerNamePrefix": "[variables('clusterName')]",
+      "adminUsername": "[parameters('adminUsername')]",
+      "adminPassword":
+        "[if(equals(parameters('authenticationType'),'sshPublicKey'),json('null'),parameters('adminPassword'))]",
+      "linuxConfiguration": "[if(equals(parameters('authenticationType'),'password'),json('null'),variables('linuxConfiguration'))]"
+    },
+    "sku_products": {
+      "vtm-dev-byol": "ivanti-virtual-traffic-manager-vm2",
+      "vtm-csp-500-l": "ivanti-virtual-traffic-manager-vm2",
+      "vtm-csp-500-l2": "ivanti-virtual-traffic-manager-vm2",
+      "vtm-csp-500-m1": "ivanti-virtual-traffic-manager-vm2",
+      "vtm-csub-1000-l": "ivanti-virtual-traffic-manager-vm2",
+      "vtm-csub-1000-m": "ivanti-virtual-traffic-manager-vm2",
+      "vtm-csub-1000-h": "ivanti-virtual-traffic-manager-vm2",
+      "vtm-csub-2000-l": "ivanti-virtual-traffic-manager-vm2",
+      "vtm-csub-1000-l-waf": "ivanti-virtual-traffic-manager-with-waf2",
+      "vtm-csub-1000-m-waf": "ivanti-virtual-traffic-manager-with-waf2",
+      "vtm-csub-1000-h-waf": "ivanti-virtual-traffic-manager-with-waf2",
+      "vtm-csub-2000-l-waf": "ivanti-virtual-traffic-manager-with-waf2",
+      "safpx-csub-1000": "ivanti-virtual-web-application-firewall2"
+    },
+    "version_suffix": {
+      "latest": "3",
+      "22.2.1": ""
+    },
+    "imagePublisherVtm": "ivanti-vadc",
+    "imageOfferVtm": "[concat(variables('sku_products')[parameters('skuType')],variables('version_suffix')[parameters('version')])]",
+    "vtmMarketplacePlan": {
+      "name": "[parameters('skuType')]",
+      "publisher": "[variables('imagePublisherVtm')]",
+      "product": "[variables('imageOfferVtm')]"
+    },
+    "imageReferenceVtm": {
+      "publisher": "[variables('imagePublisherVtm')]",
+      "offer": "[variables('imageOfferVtm')]",
+      "sku": "[parameters('skuType')]",
+      "version": "[parameters('version')]"
+    }
+  },
+  "resources": [
+    {
+      "apiVersion": "2019-07-01",
+      "type": "Microsoft.Compute/virtualMachineScaleSets",
+      "name": "[variables('virtualMachineScaleSetName')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "[parameters('vmSize')]",
+        "tier": "Standard",
+        "capacity": "[parameters('instanceCount')]"
+      },
+      "plan": "[variables('vtmMarketplacePlan')]",
+      "properties": {
+        "overprovision": "false",
+        "upgradePolicy": {
+          "mode": "Manual"
+        },
+        "virtualMachineProfile": {
+          "storageProfile": {
+            "osDisk": {
+              "caching": "ReadWrite",
+              "createOption": "FromImage"
+            },
+            "imageReference": "[variables('imageReferenceVtm')]"
+          },
+          "diagnosticsProfile": {
+            "bootDiagnostics": {
+              "enabled": true,
+              "storageUri": "[parameters('bootDiagnosticsUri')]"
+            }
+          },
+          "osProfile": "[variables('osprofile')]",
+          "networkProfile": {
+            "networkInterfaceConfigurations": [
+              {
+                "name": "[variables('networkInterfaceName')]",
+                "properties": {
+                  "primary": true,
+                  "ipConfigurations": [
+                    {
+                      "name": "[variables('ipConfigName')]",
+                      "properties": {
+                        "subnet": {
+                          "id": "[parameters('subnetId')]"
+                        },
+                        "loadBalancerBackendAddressPools": [
+                          {
+                            "id": "[parameters('loadBalancerBackendPoolId')]"
+                          }
+                        ],
+                        "loadBalancerInboundNatPools": "[parameters('loadBalancerInboundNatPoolIds')]"
+                      }
+                    }
+                  ],
+                  "networkSecurityGroup": {
+                    "id": "[parameters('networkSecurityGroupId')]"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "virtualMachineScaleSetId": {
+      "value": "[resourceId('Microsoft.Storage/virtualMachineScaleSets',variables('virtualMachineScaleSetName'))]",
+      "type": "string"
+    },
+    "virtualMachineScaleSetName": {
+      "value": "[variables('virtualMachineScaleSetName')]",
+      "type": "string"
+    }
+  }
+}

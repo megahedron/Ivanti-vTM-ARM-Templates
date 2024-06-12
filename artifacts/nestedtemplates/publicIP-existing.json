@@ -1,0 +1,36 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "string"
+    },
+    "publicIPName": {
+      "type": "string"
+    },
+    "dnsName": {
+      "type": "string"
+    },
+    "publicIPAllocationMethod": {
+      "type": "string"
+    },
+    "publicIPResourceGroup": {
+      "type": "string"
+    }
+  },
+  "resources": [ ],
+  "outputs": {
+    "publicIPId": {
+      "value": "[resourceId(parameters('publicIPResourceGroup'),'Microsoft.Network/publicIPAddresses', parameters('publicIPName') )]",
+      "type": "string"
+    },
+    "fqdn": {
+      "value": "[reference(resourceId(parameters('publicIPResourceGroup'),'Microsoft.Network/publicIPAddresses',parameters('publicIPName')), '2019-09-01').dnsSettings.fqdn]",
+      "type": "string"
+    },
+    "ipaddress": {
+      "value": "[reference(resourceId(parameters('publicIPResourceGroup'),'Microsoft.Network/publicIPAddresses',parameters('publicIPName')), '2019-09-01').ipAddress]",
+      "type": "string"
+    }
+  }
+}

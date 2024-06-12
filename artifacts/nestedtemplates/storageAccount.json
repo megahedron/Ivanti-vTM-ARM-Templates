@@ -1,0 +1,43 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string"
+        },
+        "storageAccountSeed": {
+            "type": "string"
+        },
+        "clusterName": {
+            "type": "string"
+        }
+    },
+    "variables": {
+        "storageAccountName": "[concat(parameters('clusterName'),uniqueString(parameters('storageAccountSeed')))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[variables('storageAccountName')]",
+            "apiVersion": "2019-04-01",
+            "sku": {
+                "name": "Standard_LRS"
+            },
+            "kind": "StorageV2",
+            "location": "[parameters('location')]",
+            "properties": {
+                "accessTier": "Cool"
+            }
+        }
+    ],
+    "outputs": {
+        "storageAccountId": {
+            "value": "[resourceId('Microsoft.Storage/StorageAccounts',variables('storageAccountName'))]",
+            "type": "string"
+        },
+        "storageAccountBlobUrl": {
+            "value": "[reference(resourceId('Microsoft.Storage/StorageAccounts',variables('storageAccountName')),'2019-04-01').primaryEndpoints.blob]",
+            "type": "string"
+        }
+    }
+}

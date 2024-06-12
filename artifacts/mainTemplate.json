@@ -1,0 +1,495 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string",
+            "metadata": {
+                "description": "The Azure region where all resources will be deployed."
+            }
+        },
+        "clusterName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the Virtual Traffic Manager cluster. This name will be used to prefix individual resource names. It must not be more than 9 characters long."
+            },
+            "minLength": 1,
+            "maxLength": 9
+        },
+        "instanceCountString": {
+            "type": "string",
+            "metadata": {
+                "description": "Number of Virtual Traffic Manager instances (64 or less)."
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "defaultValue": "",
+            "metadata": {
+                "description": "The password for the administrator account of the new VM when authenticationType is 'password'."
+            }
+        },
+        "sshPublicKey": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "The SSH public key for the administrator account of the new VM when authenticationType is 'sshPublicKey'."
+            }
+        },
+        "authenticationType": {
+            "type": "string",
+            "defaultValue": "both",
+            "allowedValues": [
+                "password",
+                "sshPublicKey",
+                "both"
+            ],
+            "metadata": {
+                "description": "The authentication type for Linux VMs. Possible values are 'password', 'sshPublicKey' or 'both'. The default is 'both'."
+            }
+        },
+        "skuType": {
+            "type": "string",
+            "metadata": {
+                "description": "The SKU type that defines the license to be provisioned."
+            },
+            "allowedValues": [
+                "vtm-csub-1000-l-waf",
+                "vtm-csub-1000-m-waf",
+                "vtm-csub-1000-h-waf",
+                "vtm-csub-2000-l-waf"
+            ],
+            "defaultValue": "vtm-csub-1000-l-waf"
+        },
+        "version": {
+            "type": "string",
+            "metadata": {
+                "description": "The vTM version to be deployed."
+            },
+            "allowedValues": [
+                "latest",
+                "22.2.1"
+            ],
+            "defaultValue": "latest"
+        },
+        "storageAccountSeed": {
+            "type": "string",
+            "metadata": {
+                "description": "Random string e.g. UUID to seed the boot diagnostics storage account name."
+            }
+        },
+        "virtualNetworkName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the Virtual Network."
+            },
+            "defaultValue": ""
+        },
+        "virtualNetworkAddressPrefix": {
+            "type": "string",
+            "metadata": {
+                "description": "The address space for the Virtual Network."
+            },
+            "defaultValue": ""
+        },
+        "virtualNetworkNewOrExisting": {
+            "type": "string",
+            "defaultValue": "new",
+            "allowedValues": [
+                "new",
+                "existing"
+            ],
+            "metadata": {
+                "description": "Indicates whether the Virtual Network is new or existing. Possible values are 'new' or 'existing'. The default is 'new'."
+            }
+        },
+        "virtualNetworkResourceGroup": {
+            "type": "string",
+            "metadata": {
+                "description": "The Resource Group name of the Virtual Network."
+            },
+            "defaultValue": ""
+        },
+        "subnetName": {
+            "type": "string",
+            "metadata": {
+                "description": "The Name of the subnet where all VMs' NICs are placed."
+            },
+            "defaultValue": ""
+        },
+        "subnetAddressSpace": {
+            "type": "string",
+            "metadata": {
+                "description": "The available address space for IP addresses in this subnet."
+            },
+            "defaultValue": ""
+        },
+        "vtmVmSize": {
+            "type": "string",
+            "defaultValue": "Standard_A1",
+            "metadata": {
+                "description": "The size of the Virtual Traffic Manager VM. The default is 'Standard_A1'."
+            }
+        },
+        "_artifactsLocation": {
+            "type": "string",
+            "metadata": {
+                "description": "The base URI where artifacts required by this template are located including a trailing '/'"
+            },
+            "defaultValue": "[deployment().properties.templateLink.uri]"
+        },
+        "_artifactsLocationSasToken": {
+            "type": "securestring",
+            "metadata": {
+                "description": "The sasToken required to access _artifactsLocation.  When the template is deployed using the accompanying scripts, a sasToken will be automatically generated. Use the defaultValue if the staging location is not secured."
+            },
+            "defaultValue": ""
+        },
+        "servicePortString": {
+            "type": "string",
+            "metadata": {
+                "description": "Port used by the service you are managing"
+            }
+        },
+        "serviceProtocol": {
+            "type": "string",
+            "metadata": {
+                "description": "Protocol used by the service you are managing"
+            },
+            "allowedValues": [
+                "tcp",
+                "udp"
+            ],
+            "defaultValue": "tcp"
+        },
+        "dnsNameForClusterIP": {
+            "type": "string",
+            "metadata": {
+                "description": "Unique within region DNS name for service IP"
+            }
+        },
+        "clusterIPAddressName": {
+            "type": "string",
+            "defaultValue": "clusterIP",
+            "metadata": {
+                "description": "Public IP Address Name"
+            }
+        },
+        "clusterIPNewOrExisting": {
+            "type": "string",
+            "defaultValue": "new",
+            "allowedValues": [
+                "new",
+                "existing"
+            ],
+            "metadata": {
+                "description": "Indicates whether the Cluster IP is new or existing. Possible values are 'new' or 'existing'. The default is 'new'."
+            }
+        },
+        "existingClusterIPResourceGroup": {
+            "type": "string",
+            "metadata": {
+                "description": "The Resource Group name of the existing Cluster IP. Used in combination with setting the 'clusterIPNewOrExisting' parameter to 'existing'."
+            },
+            "defaultValue": ""
+        },
+        "sshNatStartPortString": {
+            "type": "string",
+            "defaultValue": "50000"
+        },
+        "adminNatStartPortString": {
+            "type": "string",
+            "defaultValue": "50100"
+        },
+        "restNatStartPortString": {
+            "type": "string",
+            "defaultValue": "50200"
+        }
+    },
+    "variables": {
+        "instanceCount": "[int(parameters('instanceCountString'))]",
+        "servicePort": "[int(parameters('servicePortString'))]",
+        "sshNatStartPort": "[int(parameters('sshNatStartPortString'))]",
+        "adminNatStartPort": "[int(parameters('adminNatStartPortString'))]",
+        "restNatStartPort": "[int(parameters('restNatStartPortString'))]",
+        "clusterName": "[tolower(parameters('clusterName'))]",
+        "adminUsername": "dummy",
+        "publicIPAllocationMethod": "Static",
+        "networkSecurityGroupName": "[concat(variables('clusterName'),'-vtmNSG')]",
+        "securityRulesVtm": [
+            {
+                "name": "allow-ssh",
+                "properties": {
+                    "protocol": "Tcp",
+                    "sourcePortRange": "*",
+                    "destinationPortRange": "22",
+                    "sourceAddressPrefix": "*",
+                    "destinationAddressPrefix": "*",
+                    "access": "Allow",
+                    "priority": 1000,
+                    "direction": "Inbound"
+                }
+            },
+            {
+                "name": "allow-service",
+                "properties": {
+                    "protocol": "[parameters('serviceProtocol')]",
+                    "sourcePortRange": "*",
+                    "destinationPortRange": "[variables('servicePort')]",
+                    "sourceAddressPrefix": "*",
+                    "destinationAddressPrefix": "*",
+                    "access": "Allow",
+                    "priority": 1100,
+                    "direction": "Inbound"
+                }
+            },
+            {
+                "name": "allow-admin",
+                "properties": {
+                    "protocol": "Tcp",
+                    "sourcePortRange": "*",
+                    "destinationPortRange": "9090",
+                    "sourceAddressPrefix": "*",
+                    "destinationAddressPrefix": "*",
+                    "access": "Allow",
+                    "priority": 1200,
+                    "direction": "Inbound"
+                }
+            },
+            {
+                "name": "allow-rest",
+                "properties": {
+                    "protocol": "Tcp",
+                    "sourcePortRange": "*",
+                    "destinationPortRange": "9070",
+                    "sourceAddressPrefix": "*",
+                    "destinationAddressPrefix": "*",
+                    "access": "Allow",
+                    "priority": 1300,
+                    "direction": "Inbound"
+                }
+            }
+        ],
+        "loadBalancerName": "[concat(variables('clusterName'),'-vtmLB')]",
+        "sshKeyPath": "[concat('/home/',variables('adminUsername'),'/.ssh/authorized_keys')]",
+        "storageAccountTemplateURL": "[uri(parameters('_artifactsLocation'), concat('nestedtemplates/storageAccount.json', parameters('_artifactsLocationSasToken')))]",
+        "virtualNetworkTemplateURL": "[uri(parameters('_artifactsLocation'), concat('nestedtemplates/virtualNetwork-', parameters('virtualNetworkNewOrExisting'), '.json', parameters('_artifactsLocationSasToken')))]",
+        "clusterIPTemplateURL": "[uri(parameters('_artifactsLocation'), concat('nestedtemplates/publicIP-', parameters('clusterIPNewOrExisting'), '.json', parameters('_artifactsLocationSasToken')))]",
+        "virtualTrafficManagerTemplateURL": "[uri(parameters('_artifactsLocation'), concat('nestedtemplates/virtualMachine.json', parameters('_artifactsLocationSasToken')))]",
+        "loadBalancerTemplateURL": "[uri(parameters('_artifactsLocation'), concat('nestedtemplates/loadBalancer.json', parameters('_artifactsLocationSasToken')))]",
+        "virtualNetworkResourceGroup": "[if(equals(parameters('virtualNetworkNewOrExisting'),'new'),resourceGroup().name,parameters('virtualNetworkResourceGroup'))]",
+        "ref_subnet_id": "[resourceId(variables('virtualNetworkResourceGroup'), 'Microsoft/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('subnetName'))]",
+        "ref_loadbalancer_backendpool_id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('loadBalancerName'), 'LoadBalancerBackend')]",
+        "ref_loadbalancer_natpool_ids": [
+            {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/inboundNatPools', variables('loadBalancerName'), 'sshNatPool')]"
+            },
+            {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/inboundNatPools', variables('loadBalancerName'), 'adminNatPool')]"
+            },
+            {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/inboundNatPools', variables('loadBalancerName'), 'restNatPool')]"
+            }
+        ],
+        "ref_networksecuritygroup_id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+    },
+    "resources": [
+        {
+            "name": "pid-310722f5-74f9-4521-b36f-d9e164d3c776",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": []
+                }
+            }
+        },
+        {
+            "name": "storageAccountTemplate",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('storageAccountTemplateURL')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "location": {
+                        "value": "[parameters('location')]"
+                    },
+                    "storageAccountSeed": {
+                        "value": "[parameters('storageAccountSeed')]"
+                    },
+                    "clusterName": {
+                        "value": "[parameters('clusterName')]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "virtualNetworkTemplate",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('virtualNetworkTemplateURL')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "location": {
+                        "value": "[parameters('location')]"
+                    },
+                    "virtualNetworkName": {
+                        "value": "[parameters('virtualNetworkName')]"
+                    },
+                    "virtualNetworkAddressPrefix": {
+                        "value": "[parameters('virtualNetworkAddressPrefix')]"
+                    },
+                    "subnetName": {
+                        "value": "[parameters('subnetName')]"
+                    },
+                    "subnetAddressSpace": {
+                        "value": "[parameters('subnetAddressSpace')]"
+                    },
+                    "virtualNetworkResourceGroup": {
+                        "value": "[parameters('virtualNetworkResourceGroup')]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "loadBalancerTemplate",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('loadBalancerTemplateURL')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "location": {
+                        "value": "[parameters('location')]"
+                    },
+                    "clusterIPTemplateURL": {
+                        "value": "[variables('clusterIPTemplateURL')]"
+                    },
+                    "clusterIPAddressName": {
+                        "value": "[parameters('clusterIPAddressName')]"
+                    },
+                    "dnsNameForClusterIP": {
+                        "value": "[parameters('dnsNameForClusterIP')]"
+                    },
+                    "publicIPAllocationMethod": {
+                        "value": "[variables('publicIPAllocationMethod')]"
+                    },
+                    "existingClusterIPResourceGroup": {
+                        "value": "[parameters('existingClusterIPResourceGroup')]"
+                    },
+                    "servicePort": {
+                        "value": "[variables('servicePort')]"
+                    },
+                    "serviceProtocol": {
+                        "value": "[parameters('serviceProtocol')]"
+                    },
+                    "loadBalancerName": {
+                        "value": "[variables('loadBalancerName')]"
+                    },
+                    "networkSecurityGroupName": {
+                        "value": "[variables('networkSecurityGroupName')]"
+                    },
+                    "securityRules": {
+                        "value": "[variables('securityRulesVtm')]"
+                    },
+                    "sshNatStartPort": {
+                        "value": "[variables('sshNatStartPort')]"
+                    },
+                    "adminNatStartPort": {
+                        "value": "[variables('adminNatStartPort')]"
+                    },
+                    "restNatStartPort": {
+                        "value": "[variables('restNatStartPort')]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "virtualTrafficManagerTemplate",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "dependsOn": [
+                "loadBalancerTemplate",
+                "virtualNetworkTemplate",
+                "storageAccountTemplate"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('virtualTrafficManagerTemplateURL')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "location": {
+                        "value": "[parameters('location')]"
+                    },
+                    "skuType": {
+                        "value": "[parameters('skuType')]"
+                    },
+                    "version": {
+                        "value": "[parameters('version')]"
+                    },
+                    "clusterName": {
+                        "value": "[parameters('clusterName')]"
+                    },
+                    "adminUsername": {
+                        "value": "[variables('adminUsername')]"
+                    },
+                    "authenticationType": {
+                        "value": "[parameters('authenticationType')]"
+                    },
+                    "adminPassword": {
+                        "value": "[parameters('adminPassword')]"
+                    },
+                    "sshPublicKey": {
+                        "value": "[parameters('sshPublicKey')]"
+                    },
+                    "sshKeyPath": {
+                        "value": "[variables('sshKeyPath')]"
+                    },
+                    "vmSize": {
+                        "value": "[parameters('vtmVmSize')]"
+                    },
+                    "subnetId": {
+                        "value": "[variables('ref_subnet_id')]"
+                    },
+                    "loadBalancerBackendPoolId": {
+                        "value": "[variables('ref_loadbalancer_backendpool_id')]"
+                    },
+                    "networkSecurityGroupId": {
+                        "value": "[variables('ref_networksecuritygroup_id')]"
+                    },
+                    "instanceCount": {
+                        "value": "[variables('instanceCount')]"
+                    },
+                    "bootDiagnosticsUri": {
+                        "value": "[reference('storageAccountTemplate').outputs.storageAccountBlobUrl.value]"
+                    },
+                    "loadBalancerInboundNatPoolIds": {
+                        "value": "[variables('ref_loadbalancer_natpool_ids')]"
+                    }
+                }
+            }
+        }
+    ],
+    "outputs": {
+        "fqdn": {
+            "value": "[reference('loadBalancerTemplate').outputs.fqdn.value]",
+            "type": "string"
+        }
+    }
+}
