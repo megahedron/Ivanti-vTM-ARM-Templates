@@ -24,6 +24,9 @@
       "name": "[parameters('publicIPName')]",
       "apiVersion": "2019-09-01",
       "location": "[parameters('location')]",
+      "sku": {
+        "name": "Standard"
+      },
       "properties": {
         "publicIPAllocationMethod": "[parameters('publicIPAllocationMethod')]",
         "dnsSettings": {
