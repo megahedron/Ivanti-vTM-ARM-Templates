@@ -37,15 +37,15 @@
     },
     "sshNatStartPort": {
       "type": "int",
-      "defaultValue": "50000"
+      "defaultValue": 50000
     },
     "adminNatStartPort": {
       "type": "int",
-      "defaultValue": "50100"
+      "defaultValue": 50100
     },
     "restNatStartPort": {
       "type": "int",
-      "defaultValue": "50200"
+      "defaultValue": 50200
     }
   },
   "variables": {
