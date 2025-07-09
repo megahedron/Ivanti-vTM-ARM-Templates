@@ -179,8 +179,8 @@
                 "id": "[variables('vtmAdminProbeID')]"
               }
             }
-          }
-                    {
+          },
+          {
             "name": "vTMTrafficRule-443",
             "properties": {
               "frontendIPConfiguration": {
