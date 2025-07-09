@@ -85,6 +85,7 @@
       "vtm-csub-1000-h": "ivanti-virtual-traffic-manager-vm2",
       "vtm-csub-2000-l": "ivanti-virtual-traffic-manager-vm2",
       "vtm-csub-1000-l-waf": "ivanti-virtual-traffic-manager-with-waf2",
+      "vtm-csub-1000-l-waf-228r1": "ivanti-virtual-traffic-manager-with-waf2",
       "vtm-csub-1000-m-waf": "ivanti-virtual-traffic-manager-with-waf2",
       "vtm-csub-1000-h-waf": "ivanti-virtual-traffic-manager-with-waf2",
       "vtm-csub-2000-l-waf": "ivanti-virtual-traffic-manager-with-waf2",
@@ -92,7 +93,8 @@
     },
     "version_suffix": {
       "latest": "",
-      "22.2.1": ""
+      "22.2.1": "",
+      "22.8.1": ""
     },
     "imagePublisherVtm": "ivanti-vadc",
     "imageOfferVtm": "[concat(variables('sku_products')[parameters('skuType')],variables('version_suffix')[parameters('version')])]",
