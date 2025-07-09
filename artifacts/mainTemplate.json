@@ -297,7 +297,7 @@
         {
             "name": "pid-310722f5-74f9-4521-b36f-d9e164d3c776",
             "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2019-10-01",
+            "apiVersion": "2023-04-01",
             "properties": {
                 "mode": "Incremental",
                 "template": {
@@ -310,7 +310,7 @@
         {
             "name": "storageAccountTemplate",
             "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2019-10-01",
+            "apiVersion": "2023-04-01",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
@@ -333,7 +333,7 @@
         {
             "name": "virtualNetworkTemplate",
             "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2019-10-01",
+            "apiVersion": "2023-04-01",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
@@ -365,7 +365,7 @@
         {
             "name": "loadBalancerTemplate",
             "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2019-10-01",
+            "apiVersion": "2023-04-01",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
@@ -421,7 +421,7 @@
         {
             "name": "virtualTrafficManagerTemplate",
             "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2019-10-01",
+            "apiVersion": "2023-04-01",
             "dependsOn": [
                 "loadBalancerTemplate",
                 "virtualNetworkTemplate",
