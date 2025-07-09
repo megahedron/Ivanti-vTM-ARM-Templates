@@ -141,6 +141,7 @@
           },
           "osProfile": "[variables('osprofile')]",
           "networkProfile": {
+            "networkApiVersion": "2020-11-01",
             "networkInterfaceConfigurations": [
               {
                 "name": "[variables('networkInterfaceName')]",
