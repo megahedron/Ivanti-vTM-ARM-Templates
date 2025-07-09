@@ -121,7 +121,12 @@
         "tier": "Standard",
         "capacity": "[parameters('instanceCount')]"
       },
-      "plan": "[variables('vtmMarketplacePlan')]",
+      "plan": {
+        "name": "[parameters('skuType')]",
+        "product": "[variables('imageOfferVtm')]",
+        "promotionCode": null,
+        "publisher": "[variables('imagePublisherVtm')]"
+      },
       "properties": {
         "orchestrationMode": "Flexible",
         "platformFaultDomainCount": 1,
