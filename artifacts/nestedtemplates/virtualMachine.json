@@ -173,7 +173,7 @@
                     }
                   ],
                   "networkSecurityGroup": {
-                    "apiVersion": "2023-04-01",
+                    "apiVersion": "2024-03-01",
                     "id": "[parameters('networkSecurityGroupId')]"
                   }
                 }
