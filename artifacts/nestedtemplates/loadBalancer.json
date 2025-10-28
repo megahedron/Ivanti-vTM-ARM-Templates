@@ -194,6 +194,7 @@
               "frontendPort": "443",
               "backendPort": "443",
               "enableFloatingIP": false,
+              "disableOutboundSNAT": true,
               "idleTimeoutInMinutes": 4,
               "probe": {
                 "id": "[variables('vtmAdminProbeID')]"
