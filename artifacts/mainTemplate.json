@@ -310,7 +310,7 @@
         {
             "name": "storageAccountTemplate",
             "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2023-04-01",
+            "apiVersion": "2024-03-01",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
@@ -493,3 +493,4 @@
         }
     }
 }
+
